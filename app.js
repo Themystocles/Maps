@@ -367,6 +367,13 @@ function showCeara() {
         path.addEventListener("pointerenter", (event) => showCityTooltip(feature.properties.name, event));
         path.addEventListener("pointerleave", scheduleHideMapTooltip);
         path.addEventListener("click", (event) => {
+            if (!isLocalEditor) {
+                const visitWithPhoto = visitsInMunicipality(feature).slice()
+                    .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+                    .find((visit) => photosOf(visit).length);
+                if (visitWithPhoto) openPhoto(visitWithPhoto);
+                return;
+            }
             const point = elements["travel-map"].createSVGPoint();
             point.x = event.clientX;
             point.y = event.clientY;
@@ -377,6 +384,13 @@ function showCeara() {
         path.addEventListener("keydown", (event) => {
             if (event.key === "Enter" || event.key === " ") {
                 event.preventDefault();
+                if (!isLocalEditor) {
+                    const visitWithPhoto = visitsInMunicipality(feature).slice()
+                        .sort((a, b) => (b.date || "").localeCompare(a.date || ""))
+                        .find((visit) => photosOf(visit).length);
+                    if (visitWithPhoto) openPhoto(visitWithPhoto);
+                    return;
+                }
                 openVisitDialog(feature.properties.name, project(geometryCenter(feature.geometry)), feature.properties.id);
             }
         });
