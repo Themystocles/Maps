@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "visits": [
+    {
+      "id": "680b14d1-b72a-4c9d-9e9f-4796cb4e42c2",
+      "place": "Santana",
+      "city": "Santana do Acaraú",
+      "state": "CE",
+      "date": "2026-01-11",
+      "note": "Visitar Avós maternos e Tios Paternos",
+      "driveUrl": "",
+      "photos": [
+        "assets/photos/santana-do-acarau/680b14d1-b72a-4c9d-9e9f-4796cb4e42c2-4c7a1379-5eaa-4995-8904-2620e836312b.jpg"
+      ],
+      "lon": -40.154937190757416,
+      "lat": -3.475633935513861,
+      "party": "mother"
+    }
+  ]
+}

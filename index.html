@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f4ef" />
+    <meta name="description" content="Um mapa pessoal das viagens e lugares especiais pelo Brasil." />
+    <title>Por Onde Andei — meu mapa de viagens</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="travel.css" />
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="wordmark" href="#inicio" aria-label="Por Onde Andei, início">
+            <span class="wordmark-icon" aria-hidden="true">↗</span>
+            <span>por onde <strong>andei</strong></span>
+        </a>
+        <div class="topbar-note"><span class="live-dot"></span> um álbum de caminhos</div>
+        <div class="editor-tools" id="editor-tools" hidden>
+            <span class="editor-status" id="editor-status">Conecte a pasta do projeto para editar.</span>
+            <button class="project-button" id="choose-project" type="button">Conectar pasta do projeto</button>
+        </div>
+    </header>
+
+    <main id="inicio">
+        <section class="intro" aria-labelledby="page-title">
+            <div class="intro-copy">
+                <p class="eyebrow">NOSSO DIÁRIO DE FAMÍLIA</p>
+                <h1 id="page-title">Três corações,<br />um Brasil <em>inteiro.</em></h1>
+                <p class="intro-description">Themystocles, Maryanna e Marya Eliza: descobrindo novos lugares juntos
+                    e guardando cada viagem na história da nossa família.</p>
+            </div>
+            <div class="stats" aria-live="polite">
+                <div class="stat"><span class="stat-number" id="trip-count">0</span><span
+                        class="stat-label">memórias</span></div>
+                <span class="stat-divider"></span>
+                <div class="stat"><span class="stat-number" id="state-count">0</span><span class="stat-label">estados
+                        pisados</span></div>
+                <span class="stat-divider"></span>
+                <div class="stat home-stat"><span class="home-icon" aria-hidden="true">⌂</span><span
+                        class="stat-label">casa, Ceará</span></div>
+            </div>
+        </section>
+
+        <section class="map-section" aria-label="Mapa das viagens">
+            <div class="map-heading">
+                <div>
+                    <p class="eyebrow" id="map-eyebrow">O PAÍS INTEIRO</p>
+                    <h2 id="map-title">Brasil <span class="heading-note">· por descobrir</span></h2>
+                </div>
+                <button class="back-button" id="back-button" type="button" hidden><span aria-hidden="true">←</span>
+                    voltar ao Brasil</button>
+            </div>
+
+            <div class="map-layout">
+                <div class="map-stage" id="map-stage">
+                    <div class="map-grid" aria-hidden="true"></div>
+                    <div class="map-loader" id="map-loader">Preparando o mapa...</div>
+                    <svg class="travel-map" id="travel-map" role="img" aria-label="Mapa interativo do Brasil"></svg>
+                    <div class="map-tooltip" id="map-tooltip" hidden><img id="map-tooltip-image" alt="" /><span
+                            id="map-tooltip-caption"></span></div>
+                    <div class="map-caption"><span class="caption-pin" aria-hidden="true"></span><span
+                            id="map-hint">Toque em um estado para chegar mais perto</span></div>
+                </div>
+
+                <aside class="side-panel" aria-live="polite">
+                    <div class="panel-topline"><span class="panel-kicker" id="panel-kicker">PONTO DE PARTIDA</span><span
+                            class="panel-mark" aria-hidden="true">✳</span></div>
+                    <h3 id="panel-title">O Ceará é<br /><em>o começo de tudo.</em></h3>
+                    <p class="panel-copy" id="panel-copy">É daqui que as viagens começam. Clique no Ceará no mapa e
+                        marque os lugares que já viraram lembrança.</p>
+                    <button class="primary-button" id="add-visit-button" type="button" hidden><span
+                            aria-hidden="true">＋</span>
+                        adicionar lembrança</button>
+                    <div class="panel-rule"></div>
+                    <div class="list-heading"><span id="list-title">ÚLTIMAS LEMBRANÇAS</span><span class="list-count"
+                            id="list-count">0</span></div>
+                    <ul class="recent-list" id="recent-list"></ul>
+                    <p class="list-empty" id="list-empty">Suas próximas histórias aparecem por aqui.</p>
+                </aside>
+            </div>
+            <div class="attendance-legend" id="attendance-legend" aria-label="Legenda de quem participou"></div>
+        </section>
+
+        <footer class="page-footer">
+            <span>feito de lembranças, uma viagem de cada vez</span>
+            <span class="footer-right"><span class="footer-dot"></span> suas lembranças ficam nos arquivos do
+                projeto</span>
+        </footer>
+    </main>
+
+    <dialog class="visit-dialog" id="visit-dialog" aria-labelledby="dialog-title">
+        <form id="visit-form">
+            <div class="dialog-heading">
+                <div>
+                    <p class="eyebrow">UM LUGAR QUE FICOU</p>
+                    <h2 id="dialog-title">Adicionar lembrança</h2>
+                </div>
+                <button class="dialog-close" id="close-dialog" type="button" aria-label="Fechar">×</button>
+            </div>
+            <p class="dialog-subtitle" id="dialog-subtitle">Marque um lugar especial no seu mapa.</p>
+            <div class="form-grid">
+                <label class="field field-wide">Lugar ou passeio<input name="place"
+                        placeholder="Ex.: pôr do sol na praia" required maxlength="80" /></label>
+                <label class="field">Cidade<input name="city" placeholder="Ex.: Fortaleza" required
+                        maxlength="60" /></label>
+                <label class="field">Estado<select name="state" id="state-select" required></select></label>
+                <label class="field field-wide">Quem foi nessa viagem?<select name="party" id="party-select" required>
+                        <option value="">Selecione quem participou</option>
+                        <option value="father">Themystocles, sozinho</option>
+                        <option value="mother">Maryanna, sozinha</option>
+                        <option value="daughter">Marya Eliza, sozinha</option>
+                        <option value="couple">Themystocles e Maryanna</option>
+                        <option value="fatherDaughter">Themystocles e Marya Eliza</option>
+                        <option value="motherDaughter">Maryanna e Marya Eliza</option>
+                        <option value="family">Os três juntos</option>
+                    </select><span class="field-help">Escolha a composição desta lembrança; a cidade ganha a cor
+                        correspondente no mapa.</span></label>
+                <label class="field field-wide">Quando foi?<input name="date" type="date" /></label>
+                <label class="field field-wide">Uma lembrança<textarea name="note" rows="2"
+                        placeholder="O que você quer lembrar desse dia?" maxlength="240"></textarea></label>
+                <div class="field field-wide existing-photos" id="existing-photos" hidden></div>
+                <label class="field field-wide photo-field">Fotos da viagem <span class="optional-label">até
+                        3</span><input name="photos" type="file" accept="image/*" multiple /><span class="field-help"
+                        id="photo-help">As fotos serão otimizadas e salvas em assets/photos no projeto.</span></label>
+                <label class="field field-wide">Álbum privado do Google Drive <span
+                        class="optional-label">opcional</span><input name="driveUrl" type="url"
+                        placeholder="https://drive.google.com/drive/folders/..." /><span class="field-help">Cole o link
+                        do álbum, mesmo com acesso restrito. Não precisa liberar para qualquer pessoa: cada familiar
+                        deve estar logado em uma conta autorizada no Drive.</span></label>
+            </div>
+            <p class="form-error" id="form-error" role="alert"></p>
+            <div class="dialog-actions"><button class="cancel-button" id="cancel-dialog"
+                    type="button">Cancelar</button><button class="primary-button save-button" type="submit">guardar
+                    lembrança <span aria-hidden="true">↗</span></button></div>
+        </form>
+    </dialog>
+
+    <dialog class="photo-dialog" id="photo-dialog" aria-label="Fotos da lembrança">
+        <button class="photo-close" id="close-photo" type="button" aria-label="Fechar foto">×</button>
+        <div class="photo-gallery" id="photo-gallery"></div>
+        <div class="photo-caption" id="photo-caption"></div>
+    </dialog>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+
+</html>
