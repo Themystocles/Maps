@@ -399,10 +399,6 @@ h1 em,
     pointer-events: none;
 }
 
-.map-tooltip.has-action {
-    pointer-events: auto;
-}
-
 .map-tooltip.text-only {
     width: 190px;
 }
@@ -412,7 +408,6 @@ h1 em,
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: contain;
-    cursor: zoom-in;
 }
 
 .map-tooltip span {
@@ -423,30 +418,6 @@ h1 em,
     font-size: 9px;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.map-tooltip-actions {
-    display: flex;
-    margin: 0 6px 6px;
-}
-
-.map-tooltip-action {
-    flex: 1;
-    min-width: 0;
-    border: 0;
-    border-radius: 2px;
-    padding: 6px 3px;
-    background: var(--green);
-    color: white;
-    cursor: pointer;
-    font-size: 9px;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-.map-tooltip-action:hover,
-.map-tooltip-action:focus-visible {
-    background: var(--green-mid);
 }
 
 .map-caption {

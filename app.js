@@ -22,7 +22,7 @@ const stateNames = {
     RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina", SP: "São Paulo", SE: "Sergipe", TO: "Tocantins"
 };
 const elements = Object.fromEntries([
-    "travel-map", "map-loader", "map-tooltip", "map-tooltip-image", "map-tooltip-caption", "map-tooltip-open", "map-tooltip-edit", "map-title", "map-eyebrow", "map-hint", "back-button", "panel-kicker",
+    "travel-map", "map-loader", "map-tooltip", "map-tooltip-image", "map-tooltip-caption", "map-title", "map-eyebrow", "map-hint", "back-button", "panel-kicker",
     "panel-title", "panel-copy", "add-visit-button", "list-title", "list-count", "recent-list", "list-empty", "memory-search",
     "trip-count", "state-count", "visit-dialog", "visit-form", "state-select", "party-select", "attendance-legend", "dialog-subtitle", "form-error",
     "close-dialog", "cancel-dialog", "dialog-title", "photo-dialog", "photo-gallery", "photo-caption", "close-photo", "toast",
@@ -36,8 +36,6 @@ let mapMode = "brazil";
 let selectedState = "CE";
 let clickPoint = null;
 let toastTimer;
-let tooltipHideTimer;
-let tooltipVisit = null;
 let projectHandle = null;
 let editingVisitId = null;
 let removedPhotoPaths = new Set();
@@ -190,8 +188,6 @@ function addVisitPin(visit, project) {
 function showMapTooltip(visit, pin) {
     const photos = photosOf(visit);
     if (!photos.length) return;
-    window.clearTimeout(tooltipHideTimer);
-    tooltipVisit = visit;
     const pinBounds = pin.getBoundingClientRect();
     const mapBounds = document.getElementById("map-stage").getBoundingClientRect();
     const tooltipWidth = 168;
@@ -204,19 +200,15 @@ function showMapTooltip(visit, pin) {
     elements["map-tooltip-image"].hidden = false;
     elements["map-tooltip-caption"].textContent = `${visit.place} · ${visit.city} · ${attendanceFor(visit).short}`;
     elements["map-tooltip"].classList.remove("text-only");
-    elements["map-tooltip"].classList.add("has-action");
-    elements["map-tooltip-open"].hidden = false;
     elements["map-tooltip"].style.left = `${left}px`;
     elements["map-tooltip"].style.top = `${top}px`;
     elements["map-tooltip"].hidden = false;
 }
 
 function showCityTooltip(city, event) {
-    window.clearTimeout(tooltipHideTimer);
     const municipalityVisits = visits.filter((visit) => visit.state === "CE" && normalizePlace(visit.city) === normalizePlace(city));
     const municipalityVisit = municipalityVisits.slice().sort((a, b) => (b.date || "").localeCompare(a.date || "")).find((visit) => photosOf(visit).length) || municipalityVisits[0];
     const photos = municipalityVisit ? photosOf(municipalityVisit) : [];
-    tooltipVisit = photos.length ? municipalityVisit : null;
     const attendanceLabels = [...new Set(municipalityVisits.map((visit) => attendanceFor(visit).short))];
     const mapBounds = document.getElementById("map-stage").getBoundingClientRect();
     const tooltipWidth = 190;
@@ -231,16 +223,12 @@ function showCityTooltip(city, event) {
     if (photos.length) elements["map-tooltip-image"].src = photos[0];
     elements["map-tooltip-caption"].textContent = municipalityVisit ? `${city} · ${attendanceLabels.join(" / ")}` : `${city} · Ceará`;
     elements["map-tooltip"].classList.toggle("text-only", !photos.length);
-    elements["map-tooltip"].classList.toggle("has-action", Boolean(photos.length));
-    elements["map-tooltip-open"].hidden = !photos.length;
     elements["map-tooltip"].style.left = `${left}px`;
     elements["map-tooltip"].style.top = `${top}px`;
     elements["map-tooltip"].hidden = false;
 }
 
 function showStateTooltip(feature, cityLabel, event) {
-    window.clearTimeout(tooltipHideTimer);
-    tooltipVisit = null;
     const mapBounds = document.getElementById("map-stage").getBoundingClientRect();
     const tooltipWidth = 190;
     const left = Math.min(Math.max(event.clientX - mapBounds.left + 12, 8), Math.max(8, mapBounds.width - tooltipWidth - 8));
@@ -248,16 +236,13 @@ function showStateTooltip(feature, cityLabel, event) {
     elements["map-tooltip-image"].hidden = true;
     elements["map-tooltip-caption"].textContent = `${feature.properties.name} · ${cityLabel}`;
     elements["map-tooltip"].classList.add("text-only");
-    elements["map-tooltip"].classList.remove("has-action");
-    elements["map-tooltip-open"].hidden = true;
     elements["map-tooltip"].style.left = `${left}px`;
     elements["map-tooltip"].style.top = `${top}px`;
     elements["map-tooltip"].hidden = false;
 }
 
 function scheduleHideMapTooltip() {
-    window.clearTimeout(tooltipHideTimer);
-    tooltipHideTimer = window.setTimeout(hideMapTooltip, 3000);
+    hideMapTooltip();
 }
 
 function hideMapTooltip() {
@@ -918,19 +903,6 @@ elements["cancel-dialog"].addEventListener("click", () => elements["visit-dialog
 elements["visit-form"].addEventListener("submit", saveVisit);
 elements["close-photo"].addEventListener("click", () => elements["photo-dialog"].close());
 elements["choose-project"].addEventListener("click", () => connectProjectFolder());
-elements["map-tooltip-open"].addEventListener("click", (event) => {
-    event.stopPropagation();
-    if (tooltipVisit) openPhoto(tooltipVisit);
-});
-elements["map-tooltip-image"].addEventListener("click", () => {
-    if (tooltipVisit) openPhoto(tooltipVisit);
-});
-elements["map-tooltip"].addEventListener("pointerenter", () => window.clearTimeout(tooltipHideTimer));
-elements["map-tooltip"].addEventListener("pointerleave", hideMapTooltip);
-elements["map-tooltip"].addEventListener("focusin", () => window.clearTimeout(tooltipHideTimer));
-elements["map-tooltip"].addEventListener("focusout", (event) => {
-    if (!elements["map-tooltip"].contains(event.relatedTarget)) scheduleHideMapTooltip();
-});
 elements["visit-dialog"].addEventListener("click", (event) => { if (event.target === elements["visit-dialog"]) elements["visit-dialog"].close(); });
 elements["photo-dialog"].addEventListener("click", (event) => { if (event.target === elements["photo-dialog"]) elements["photo-dialog"].close(); });
 elements["memory-search"].addEventListener("input", (event) => {
