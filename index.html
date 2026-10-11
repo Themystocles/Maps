@@ -12,8 +12,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="travel.css" />
-    <script src="app.js" defer></script>
+    <link rel="stylesheet" href="travel.css?v=3" />
+    <script src="app.js?v=3" defer></script>
 </head>
 
 <body>
@@ -65,7 +65,10 @@
                     <div class="map-loader" id="map-loader">Preparando o mapa...</div>
                     <svg class="travel-map" id="travel-map" role="img" aria-label="Mapa interativo do Brasil"></svg>
                     <div class="map-tooltip" id="map-tooltip" hidden><img id="map-tooltip-image" alt="" /><span
-                            id="map-tooltip-caption"></span></div>
+                            id="map-tooltip-caption"></span>
+                        <div class="map-tooltip-actions"><button class="map-tooltip-action" id="map-tooltip-open"
+                                type="button" hidden>abrir foto ↗</button></div>
+                    </div>
                     <div class="map-caption"><span class="caption-pin" aria-hidden="true"></span><span
                             id="map-hint">Toque em um estado para chegar mais perto</span></div>
                 </div>
@@ -82,6 +85,8 @@
                     <div class="panel-rule"></div>
                     <div class="list-heading"><span id="list-title">ÚLTIMAS LEMBRANÇAS</span><span class="list-count"
                             id="list-count">0</span></div>
+                    <label class="memory-search-label" for="memory-search">Buscar cidade ou lembrança</label>
+                    <input class="memory-search" id="memory-search" type="search" placeholder="Digite o nome da cidade..." autocomplete="off" />
                     <ul class="recent-list" id="recent-list"></ul>
                     <p class="list-empty" id="list-empty">Suas próximas histórias aparecem por aqui.</p>
                 </aside>
@@ -130,11 +135,11 @@
                 <label class="field field-wide photo-field">Fotos da viagem <span class="optional-label">até
                         3</span><input name="photos" type="file" accept="image/*" multiple /><span class="field-help"
                         id="photo-help">As fotos serão otimizadas e salvas em assets/photos no projeto.</span></label>
-                <label class="field field-wide">Álbum privado do Google Drive <span
+                <label class="field field-wide">Álbum do Google Fotos ou Drive <span
                         class="optional-label">opcional</span><input name="driveUrl" type="url"
-                        placeholder="https://drive.google.com/drive/folders/..." /><span class="field-help">Cole o link
-                        do álbum, mesmo com acesso restrito. Não precisa liberar para qualquer pessoa: cada familiar
-                        deve estar logado em uma conta autorizada no Drive.</span></label>
+                        placeholder="https://photos.google.com/album/..." /><span class="field-help">Cole o link
+                        do álbum, mesmo com acesso restrito. Cada familiar deve estar logado em uma conta Google
+                        autorizada a acessá-lo.</span></label>
             </div>
             <p class="form-error" id="form-error" role="alert"></p>
             <div class="dialog-actions"><button class="cancel-button" id="cancel-dialog"

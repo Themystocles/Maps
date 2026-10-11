@@ -314,6 +314,26 @@ h1 em,
     fill: var(--orange);
 }
 
+.state-visit-label {
+    fill: #fffefa;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    paint-order: stroke;
+    pointer-events: none;
+    stroke: #19332c;
+    stroke-linejoin: round;
+    stroke-width: 2px;
+    text-anchor: middle;
+}
+
+@media (max-width: 600px) {
+    .state-visit-label {
+        font-size: 20px;
+        stroke-width: 2px;
+    }
+}
+
 .state-shape.home-state:hover,
 .state-shape.home-state:focus-visible {
     fill: #d45c39;
@@ -379,6 +399,10 @@ h1 em,
     pointer-events: none;
 }
 
+.map-tooltip.has-action {
+    pointer-events: auto;
+}
+
 .map-tooltip.text-only {
     width: 190px;
 }
@@ -387,7 +411,8 @@ h1 em,
     display: block;
     width: 100%;
     aspect-ratio: 4 / 3;
-    object-fit: cover;
+    object-fit: contain;
+    cursor: zoom-in;
 }
 
 .map-tooltip span {
@@ -398,6 +423,30 @@ h1 em,
     font-size: 9px;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.map-tooltip-actions {
+    display: flex;
+    margin: 0 6px 6px;
+}
+
+.map-tooltip-action {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    border-radius: 2px;
+    padding: 6px 3px;
+    background: var(--green);
+    color: white;
+    cursor: pointer;
+    font-size: 9px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.map-tooltip-action:hover,
+.map-tooltip-action:focus-visible {
+    background: var(--green-mid);
 }
 
 .map-caption {
@@ -530,9 +579,45 @@ h1 em,
     display: flex;
     flex-direction: column;
     gap: 0;
+    flex: 0 0 auto;
     list-style: none;
     margin: 8px 0 0;
     padding: 0;
+    max-height: 310px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.memory-search-label {
+    display: block;
+    margin-top: 10px;
+    color: #707b70;
+    font-size: 9px;
+}
+
+.memory-search {
+    width: 100%;
+    min-height: 34px;
+    margin-top: 5px;
+    border: 1px solid #d9ded4;
+    border-radius: 5px;
+    padding: 8px 11px;
+    background: #fbfcf8;
+    color: var(--ink);
+    font: 11px var(--sans);
+    box-shadow: inset 0 1px 2px #19332c08;
+    transition: border-color .16s, box-shadow .16s, background .16s;
+}
+
+.memory-search:focus {
+    border-color: #5b8a6b;
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 0 3px #5b8a6b20;
+}
+
+.memory-search::placeholder {
+    color: #929a90;
 }
 
 .recent-item {
@@ -560,6 +645,22 @@ h1 em,
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.recent-photo-button {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: zoom-in;
+}
+
+.recent-photo-button:focus-visible {
+    outline: 2px solid var(--green-mid);
+    outline-offset: -2px;
 }
 
 .recent-name {

@@ -22,8 +22,8 @@ const stateNames = {
     RO: "Rondônia", RR: "Roraima", SC: "Santa Catarina", SP: "São Paulo", SE: "Sergipe", TO: "Tocantins"
 };
 const elements = Object.fromEntries([
-    "travel-map", "map-loader", "map-tooltip", "map-tooltip-image", "map-tooltip-caption", "map-title", "map-eyebrow", "map-hint", "back-button", "panel-kicker",
-    "panel-title", "panel-copy", "add-visit-button", "list-title", "list-count", "recent-list", "list-empty",
+    "travel-map", "map-loader", "map-tooltip", "map-tooltip-image", "map-tooltip-caption", "map-tooltip-open", "map-tooltip-edit", "map-title", "map-eyebrow", "map-hint", "back-button", "panel-kicker",
+    "panel-title", "panel-copy", "add-visit-button", "list-title", "list-count", "recent-list", "list-empty", "memory-search",
     "trip-count", "state-count", "visit-dialog", "visit-form", "state-select", "party-select", "attendance-legend", "dialog-subtitle", "form-error",
     "close-dialog", "cancel-dialog", "dialog-title", "photo-dialog", "photo-gallery", "photo-caption", "close-photo", "toast",
     "editor-tools", "editor-status", "choose-project", "existing-photos", "photo-help"
@@ -36,9 +36,12 @@ let mapMode = "brazil";
 let selectedState = "CE";
 let clickPoint = null;
 let toastTimer;
+let tooltipHideTimer;
+let tooltipVisit = null;
 let projectHandle = null;
 let editingVisitId = null;
 let removedPhotoPaths = new Set();
+let memorySearch = "";
 
 function svgElement(name, attributes = {}) {
     const element = document.createElementNS(SVG_NS, name);
@@ -178,45 +181,83 @@ function addVisitPin(visit, project) {
         }
     });
     group.addEventListener("pointerenter", () => showMapTooltip(visit, group));
-    group.addEventListener("pointerleave", hideMapTooltip);
+    group.addEventListener("pointerleave", scheduleHideMapTooltip);
     group.addEventListener("focus", () => showMapTooltip(visit, group));
-    group.addEventListener("blur", hideMapTooltip);
+    group.addEventListener("blur", scheduleHideMapTooltip);
     elements["travel-map"].append(group);
 }
 
 function showMapTooltip(visit, pin) {
     const photos = photosOf(visit);
     if (!photos.length) return;
+    window.clearTimeout(tooltipHideTimer);
+    tooltipVisit = visit;
     const pinBounds = pin.getBoundingClientRect();
     const mapBounds = document.getElementById("map-stage").getBoundingClientRect();
     const tooltipWidth = 168;
-    const left = Math.min(Math.max(pinBounds.left - mapBounds.left + 14, 8), mapBounds.width - tooltipWidth - 8);
-    const top = pinBounds.top - mapBounds.top > 130 ? pinBounds.top - mapBounds.top - 118 : pinBounds.bottom - mapBounds.top + 12;
+    const tooltipHeight = 194;
+    const left = Math.min(Math.max(pinBounds.left - mapBounds.left + 14, 8), Math.max(8, mapBounds.width - tooltipWidth - 8));
+    const pinTop = pinBounds.top - mapBounds.top;
+    const topCandidate = pinTop > tooltipHeight ? pinTop - tooltipHeight : pinBounds.bottom - mapBounds.top;
+    const top = Math.min(Math.max(topCandidate, 8), Math.max(8, mapBounds.height - tooltipHeight - 8));
     elements["map-tooltip-image"].src = photos[0];
     elements["map-tooltip-image"].hidden = false;
     elements["map-tooltip-caption"].textContent = `${visit.place} · ${visit.city} · ${attendanceFor(visit).short}`;
     elements["map-tooltip"].classList.remove("text-only");
+    elements["map-tooltip"].classList.add("has-action");
+    elements["map-tooltip-open"].hidden = false;
     elements["map-tooltip"].style.left = `${left}px`;
     elements["map-tooltip"].style.top = `${top}px`;
     elements["map-tooltip"].hidden = false;
 }
 
 function showCityTooltip(city, event) {
+    window.clearTimeout(tooltipHideTimer);
     const municipalityVisits = visits.filter((visit) => visit.state === "CE" && normalizePlace(visit.city) === normalizePlace(city));
     const municipalityVisit = municipalityVisits.slice().sort((a, b) => (b.date || "").localeCompare(a.date || "")).find((visit) => photosOf(visit).length) || municipalityVisits[0];
     const photos = municipalityVisit ? photosOf(municipalityVisit) : [];
+    tooltipVisit = photos.length ? municipalityVisit : null;
     const attendanceLabels = [...new Set(municipalityVisits.map((visit) => attendanceFor(visit).short))];
     const mapBounds = document.getElementById("map-stage").getBoundingClientRect();
     const tooltipWidth = 190;
-    const left = Math.min(Math.max(event.clientX - mapBounds.left + 12, 8), mapBounds.width - tooltipWidth - 8);
-    const top = Math.min(Math.max(event.clientY - mapBounds.top - (photos.length ? 128 : 34), 8), mapBounds.height - (photos.length ? 150 : 42));
+    const tooltipHeight = photos.length ? 194 : 42;
+    const left = Math.min(Math.max(event.clientX - mapBounds.left + 12, 8), Math.max(8, mapBounds.width - tooltipWidth - 8));
+    const pointerY = event.clientY - mapBounds.top;
+    const topCandidate = photos.length && pointerY > tooltipHeight
+        ? pointerY - tooltipHeight
+        : pointerY;
+    const top = Math.min(Math.max(topCandidate, 8), Math.max(8, mapBounds.height - tooltipHeight - 8));
     elements["map-tooltip-image"].hidden = !photos.length;
     if (photos.length) elements["map-tooltip-image"].src = photos[0];
     elements["map-tooltip-caption"].textContent = municipalityVisit ? `${city} · ${attendanceLabels.join(" / ")}` : `${city} · Ceará`;
     elements["map-tooltip"].classList.toggle("text-only", !photos.length);
+    elements["map-tooltip"].classList.toggle("has-action", Boolean(photos.length));
+    elements["map-tooltip-open"].hidden = !photos.length;
     elements["map-tooltip"].style.left = `${left}px`;
     elements["map-tooltip"].style.top = `${top}px`;
     elements["map-tooltip"].hidden = false;
+}
+
+function showStateTooltip(feature, cityLabel, event) {
+    window.clearTimeout(tooltipHideTimer);
+    tooltipVisit = null;
+    const mapBounds = document.getElementById("map-stage").getBoundingClientRect();
+    const tooltipWidth = 190;
+    const left = Math.min(Math.max(event.clientX - mapBounds.left + 12, 8), Math.max(8, mapBounds.width - tooltipWidth - 8));
+    const top = Math.min(Math.max(event.clientY - mapBounds.top - 38, 8), Math.max(8, mapBounds.height - 42));
+    elements["map-tooltip-image"].hidden = true;
+    elements["map-tooltip-caption"].textContent = `${feature.properties.name} · ${cityLabel}`;
+    elements["map-tooltip"].classList.add("text-only");
+    elements["map-tooltip"].classList.remove("has-action");
+    elements["map-tooltip-open"].hidden = true;
+    elements["map-tooltip"].style.left = `${left}px`;
+    elements["map-tooltip"].style.top = `${top}px`;
+    elements["map-tooltip"].hidden = false;
+}
+
+function scheduleHideMapTooltip() {
+    window.clearTimeout(tooltipHideTimer);
+    tooltipHideTimer = window.setTimeout(hideMapTooltip, 3000);
 }
 
 function hideMapTooltip() {
@@ -245,9 +286,14 @@ function renderBrazil() {
     const mapProject = (point) => [offsetX + (point[0] - minLon) * scale, offsetY + (maxLat - point[1]) * scale];
     for (const feature of states) {
         const abbreviation = feature.properties.sigla;
-        const path = svgElement("path", { d: geometryPath(feature.geometry, mapProject), class: `state-shape${abbreviation === "CE" ? " home-state" : ""}`, tabindex: "0", role: "button", "aria-label": `${feature.properties.name}, ${abbreviation}` });
+        const stateVisits = visits.filter((visit) => visit.state === abbreviation);
+        const visitedCities = new Set(stateVisits.map((visit) => normalizePlace(visit.city)));
+        const cityCount = visitedCities.size;
+        const cityLabel = `${cityCount} ${cityCount === 1 ? "cidade visitada" : "cidades visitadas"}`;
+        const stateClasses = ["state-shape", ...(cityCount ? ["visited"] : []), ...(abbreviation === "CE" ? ["home-state"] : [])].join(" ");
+        const path = svgElement("path", { d: geometryPath(feature.geometry, mapProject), class: stateClasses, tabindex: "0", role: "button", "aria-label": `${feature.properties.name}, ${abbreviation}, ${cityLabel}` });
         const title = svgElement("title");
-        title.textContent = `${feature.properties.name} · ${visits.filter((visit) => visit.state === abbreviation).length} lembranças`;
+        title.textContent = `${feature.properties.name} · ${cityLabel}`;
         path.append(title);
         path.addEventListener("click", () => abbreviation === "CE" ? showCeara() : showState(abbreviation));
         path.addEventListener("keydown", (event) => {
@@ -256,9 +302,17 @@ function renderBrazil() {
                 abbreviation === "CE" ? showCeara() : showState(abbreviation);
             }
         });
+        path.addEventListener("pointerenter", (event) => showStateTooltip(feature, cityLabel, event));
+        path.addEventListener("pointermove", (event) => showStateTooltip(feature, cityLabel, event));
+        path.addEventListener("pointerleave", hideMapTooltip);
         elements["travel-map"].append(path);
+        if (cityCount) {
+            const [labelX, labelY] = mapProject(geometryCenter(feature.geometry));
+            const label = svgElement("text", { class: "state-visit-label", x: labelX, y: labelY, "aria-hidden": "true" });
+            label.textContent = String(cityCount);
+            elements["travel-map"].append(label);
+        }
     }
-    visits.forEach((visit) => addVisitPin(visit, mapProject));
     elements["travel-map"].setAttribute("viewBox", "0 0 1000 700");
     elements["travel-map"].setAttribute("preserveAspectRatio", "xMidYMid meet");
     elements["map-title"].innerHTML = 'Brasil <span class="heading-note">· por descobrir</span>';
@@ -311,8 +365,7 @@ function showCeara() {
         title.textContent = `${feature.properties.name} · ${municipalityVisits.length ? `${municipalityVisits.length} lembrança(s)` : "toque para marcar uma visita"}`;
         path.append(title);
         path.addEventListener("pointerenter", (event) => showCityTooltip(feature.properties.name, event));
-        path.addEventListener("pointermove", (event) => showCityTooltip(feature.properties.name, event));
-        path.addEventListener("pointerleave", hideMapTooltip);
+        path.addEventListener("pointerleave", scheduleHideMapTooltip);
         path.addEventListener("click", (event) => {
             const point = elements["travel-map"].createSVGPoint();
             point.x = event.clientX;
@@ -362,12 +415,15 @@ function updatePanel() {
 }
 
 function updateRecentList() {
-    const visible = (mapMode === "brazil" ? visits : visits.filter((visit) => visit.state === selectedState))
-        .slice().sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 4);
+    const allVisible = mapMode === "brazil" ? visits : visits.filter((visit) => visit.state === selectedState);
+    const query = normalizePlace(memorySearch);
+    const visible = allVisible.filter((visit) => !query || normalizePlace(`${visit.city} ${visit.place} ${visit.state}`).includes(query))
+        .slice().sort((a, b) => (b.date || "").localeCompare(a.date || ""));
     elements["recent-list"].replaceChildren();
     elements["list-title"].textContent = mapMode === "brazil" ? "ÚLTIMAS LEMBRANÇAS" : `LEMBRANÇAS EM ${selectedState}`;
     elements["list-count"].textContent = String(visible.length);
     elements["list-empty"].hidden = visible.length > 0;
+    elements["list-empty"].textContent = query ? "Nenhum resultado para essa busca." : "Suas proximas historias aparecerao por aqui.";
     for (const visit of visible) {
         const item = document.createElement("li");
         item.className = "recent-item";
@@ -378,7 +434,17 @@ function updateRecentList() {
             const image = document.createElement("img");
             image.src = photos[0];
             image.alt = "";
-            thumb.append(image);
+            const photoButton = document.createElement("button");
+            photoButton.className = "recent-photo-button";
+            photoButton.type = "button";
+            photoButton.title = `Abrir fotos de ${visit.city}`;
+            photoButton.setAttribute("aria-label", `Abrir ${photos.length} foto(s) de ${visit.city}`);
+            photoButton.append(image);
+            photoButton.addEventListener("click", (event) => {
+                event.stopPropagation();
+                openPhoto(visit);
+            });
+            thumb.append(photoButton);
         } else thumb.textContent = "↗";
         const text = document.createElement("span");
         text.className = "recent-name";
@@ -532,6 +598,10 @@ function renderExistingPhotos(visit) {
 
 function editVisit(visit) {
     selectedState = visit.state;
+    if (!projectHandle) {
+        connectProjectFolder(false, visit);
+        return;
+    }
     openVisitDialog(visit.city, null, "", visit);
 }
 
@@ -549,7 +619,7 @@ function openPhoto(visit) {
         albumLink.href = visit.driveUrl;
         albumLink.target = "_blank";
         albumLink.rel = "noopener noreferrer";
-        albumLink.textContent = "abrir álbum do Drive ↗";
+        albumLink.textContent = "abrir álbum do Google ↗";
         elements["photo-caption"].append(albumLink);
     }
     elements["photo-dialog"].showModal();
@@ -626,7 +696,7 @@ async function migrateLegacyVisits(existingVisits) {
     return [...existingVisits, ...migrated];
 }
 
-async function connectProjectFolder(openFormAfterConnect = false) {
+async function connectProjectFolder(openFormAfterConnect = false, visitToEdit = null) {
     if (!window.showDirectoryPicker) {
         showToast("Use Chrome ou Edge pelo servidor local para escolher a pasta do projeto.");
         return;
@@ -657,7 +727,9 @@ async function connectProjectFolder(openFormAfterConnect = false) {
         updateEditorState(`Pasta conectada: ${handle.name}. As alterações ficam nos arquivos do projeto.`);
         renderBrazil();
         showToast("Projeto conectado. Novas fotos serão salvas em assets/photos.");
-        if (openFormAfterConnect) openVisitDialog();
+        const connectedVisit = visitToEdit && visits.find((visit) => visit.id === visitToEdit.id);
+        if (connectedVisit) editVisit(connectedVisit);
+        else if (openFormAfterConnect) openVisitDialog();
     } catch (error) {
         projectHandle = null;
         updateEditorState();
@@ -717,9 +789,9 @@ async function saveVisit(event) {
     const driveUrl = String(data.get("driveUrl") || "").trim();
     if (driveUrl) {
         try {
-            if (new URL(driveUrl).hostname !== "drive.google.com") throw new Error();
+            if (!["drive.google.com", "photos.google.com"].includes(new URL(driveUrl).hostname)) throw new Error();
         } catch {
-            elements["form-error"].textContent = "Use um link do Google Drive, mesmo que o álbum tenha acesso restrito.";
+            elements["form-error"].textContent = "Use um link do Google Drive ou do Google Fotos, mesmo que o álbum tenha acesso restrito.";
             return;
         }
     }
@@ -832,6 +904,27 @@ elements["cancel-dialog"].addEventListener("click", () => elements["visit-dialog
 elements["visit-form"].addEventListener("submit", saveVisit);
 elements["close-photo"].addEventListener("click", () => elements["photo-dialog"].close());
 elements["choose-project"].addEventListener("click", () => connectProjectFolder());
+elements["map-tooltip-open"].addEventListener("click", (event) => {
+    event.stopPropagation();
+    if (tooltipVisit) openPhoto(tooltipVisit);
+});
+elements["map-tooltip-image"].addEventListener("click", () => {
+    if (tooltipVisit) openPhoto(tooltipVisit);
+});
+elements["map-tooltip"].addEventListener("pointerenter", () => window.clearTimeout(tooltipHideTimer));
+elements["map-tooltip"].addEventListener("pointerleave", hideMapTooltip);
+elements["map-tooltip"].addEventListener("focusin", () => window.clearTimeout(tooltipHideTimer));
+elements["map-tooltip"].addEventListener("focusout", (event) => {
+    if (!elements["map-tooltip"].contains(event.relatedTarget)) scheduleHideMapTooltip();
+});
 elements["visit-dialog"].addEventListener("click", (event) => { if (event.target === elements["visit-dialog"]) elements["visit-dialog"].close(); });
 elements["photo-dialog"].addEventListener("click", (event) => { if (event.target === elements["photo-dialog"]) elements["photo-dialog"].close(); });
+elements["memory-search"].addEventListener("input", (event) => {
+    memorySearch = event.target.value;
+    updateRecentList();
+});
+elements["memory-search"].addEventListener("search", (event) => {
+    memorySearch = event.target.value;
+    updateRecentList();
+});
 start();

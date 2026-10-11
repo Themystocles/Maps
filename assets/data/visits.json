@@ -10,11 +10,101 @@
       "note": "Visitar Avós maternos e Tios Paternos",
       "driveUrl": "",
       "photos": [
-        "assets/photos/santana-do-acarau/680b14d1-b72a-4c9d-9e9f-4796cb4e42c2-4c7a1379-5eaa-4995-8904-2620e836312b.jpg"
+        "assets/photos/santana-do-acarau/680b14d1-b72a-4c9d-9e9f-4796cb4e42c2-8e708ccf-99a1-484b-bad4-e8950951a785.jpg"
       ],
       "lon": -40.154937190757416,
       "lat": -3.475633935513861,
-      "party": "mother"
+      "party": "family"
+    },
+    {
+      "id": "06363c99-8dd4-4690-8232-84714698fd31",
+      "place": "Juazeiro do Norte",
+      "city": "Juazeiro do Norte",
+      "state": "CE",
+      "party": "father",
+      "date": "2020-09-13",
+      "note": "Viagem a trabalho pela empresa Diagonal com Sideraltech",
+      "driveUrl": "https://photos.google.com/album/AF1QipMLypZNbAae0sjX3rSS1XbewhzfbFi_yk73sqkZ",
+      "photos": [
+        "assets/photos/juazeiro-do-norte/06363c99-8dd4-4690-8232-84714698fd31-f2b32a33-9fb9-413d-a7d1-f153e569787e.jpg"
+      ],
+      "lon": -39.27031349491887,
+      "lat": -7.173365087345284
+    },
+    {
+      "id": "30c39d91-9941-4e3c-9423-3b2e6d6eac7e",
+      "place": "Casa de Praia Sr Humberto",
+      "city": "Beberibe",
+      "state": "CE",
+      "party": "family",
+      "date": "2025-01-11",
+      "note": "Casa de Praia Sr Humberto",
+      "driveUrl": "",
+      "photos": [
+        "assets/photos/beberibe/30c39d91-9941-4e3c-9423-3b2e6d6eac7e-74d84728-cd42-43b8-b69b-44013484f73d.jpg"
+      ],
+      "lon": -38.06871473316385,
+      "lat": -4.379169428743179
+    },
+    {
+      "id": "26f71339-094c-4c3e-a564-44dd778596f1",
+      "place": "Guaramiranga",
+      "city": "Guaramiranga",
+      "state": "CE",
+      "party": "family",
+      "date": "2026-02-11",
+      "note": "Viagem em familia Lazer",
+      "driveUrl": "",
+      "photos": [
+        "assets/photos/guaramiranga/26f71339-094c-4c3e-a564-44dd778596f1-27b067c5-e1a9-46f3-ab74-b4f6ecb01af2.jpg"
+      ],
+      "lon": -38.95069002456833,
+      "lat": -4.230848747373333
+    },
+    {
+      "id": "12bdcde6-7197-46eb-8ca0-567b8d0966c4",
+      "place": "Redenção Casa de Campo",
+      "city": "Redenção",
+      "state": "CE",
+      "party": "family",
+      "date": "2026-02-11",
+      "note": "Lazer com a familia",
+      "driveUrl": "",
+      "photos": [
+        "assets/photos/redencao/12bdcde6-7197-46eb-8ca0-567b8d0966c4-309be495-e868-4d40-8091-efe34823cd3d.jpg"
+      ],
+      "lon": -38.76758756583714,
+      "lat": -4.247353486729999
+    },
+    {
+      "id": "20df6b98-2a35-4984-807f-317745c22fd7",
+      "place": "Icaraí Lazer",
+      "city": "Caucaia",
+      "state": "CE",
+      "party": "family",
+      "date": "2024-01-11",
+      "note": "Lazer Icaraí",
+      "driveUrl": "",
+      "photos": [
+        "assets/photos/icarai/20df6b98-2a35-4984-807f-317745c22fd7-43fd8b41-3b60-4ffb-9c84-a956ade44686.jpg"
+      ],
+      "lon": -38.79839326661042,
+      "lat": -3.7900107921822914
+    },
+    {
+      "id": "7fba1e41-5e73-4635-b3b7-ae50d8975bab",
+      "place": "Casa Fortaleza",
+      "city": "Fortaleza",
+      "state": "CE",
+      "party": "family",
+      "date": "2026-10-11",
+      "note": "Nossa casa",
+      "driveUrl": "",
+      "photos": [
+        "assets/photos/fortaleza/7fba1e41-5e73-4635-b3b7-ae50d8975bab-96ff6af2-5f48-43d1-b3d0-2b0b68701681.jpg"
+      ],
+      "lon": -38.518777279470974,
+      "lat": -3.7794734542564514
     }
   ]
 }
